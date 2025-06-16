@@ -1,3 +1,4 @@
+using InvestigationGame.Agents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace InvestigationGame.Sensors
             get { return activateCount; }
             set { activateCount = value; }
         }
-        public virtual bool ActivateSensor(IranianAgent iranianAgent, List<Sensor> sensorsByAgent)
+        public virtual bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             foreach (string sensorName in iranianAgent.sensorsCopy)
             {

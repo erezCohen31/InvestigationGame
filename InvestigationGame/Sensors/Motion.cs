@@ -1,3 +1,5 @@
+using InvestigationGame.Agents;
+
 namespace InvestigationGame.Sensors
 {
 
@@ -9,7 +11,7 @@ namespace InvestigationGame.Sensors
             this.type = "Motion";
             maxActivateCount = 3;
         }
-        public override bool ActivateSensor(IranianAgent iranianAgent, List<Sensor> sensorsByAgent)
+        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             if (base.ActivateSensor(iranianAgent, sensorsByAgent))
             {

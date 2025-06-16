@@ -1,3 +1,4 @@
+using InvestigationGame.Agents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace InvestigationGame.Sensors
             this.type = "Thermal";
         }
 
-        public override bool ActivateSensor(IranianAgent iranianAgent, List<Sensor> sensorsByAgent)
+        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             if(base.ActivateSensor(iranianAgent,sensorsByAgent))
             {

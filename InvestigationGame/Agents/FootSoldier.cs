@@ -6,7 +6,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvestigationGame
+namespace InvestigationGame.Agents
 {
     enum SensorType
     {
@@ -18,25 +18,15 @@ namespace InvestigationGame
         Signal,
         Light
     }
-    internal class IranianAgent
-    {
-        public int id;
-        public int rank;
-        public List<string> sensors;
-        public List<string> sensorsCopy;
-        public bool isDiscovered = false;
-        public int capacity;
-        public int foundCount;
-        public int notCounterAttack;
 
-        public IranianAgent(int id)
+    internal class FootSoldier : Agent
+    {
+
+
+        public FootSoldier(int id): base(id)
         {
-            this.id = id;
-            this.rank = RandomRank();
-            SetCapacity();
-            sensors = new List<string>();
-            RandomSensor();
-            notCounterAttack = 0;
+            rank =1;
+            this.capacity = 2;
         }
 
         public int RandomRank()
@@ -44,24 +34,7 @@ namespace InvestigationGame
             Random random = new Random();
             return random.Next(1, 4);
         }
-        public void SetCapacity()
-        {
-            switch (rank)
-            {
-                case 1:
-                    capacity = 2;
-                    break;
-                case 2:
-                    capacity = 4;
-                    break;
-                case 3:
-                    capacity = 6;
-                    break;
-                default:
-                    capacity = 0;
-                    break;
-            }
-        }
+
 
         public void RandomSensor()
         {

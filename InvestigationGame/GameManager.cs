@@ -1,3 +1,4 @@
+using InvestigationGame.Agents;
 using InvestigationGame.Sensors;
 using System;
 using System.Collections.Generic;
@@ -10,18 +11,20 @@ namespace InvestigationGame
 {
     internal class GameManager
     {
-        IranianAgent iranianAgent;
+        Agent iranianAgent;
         bool isWin;
-        Dictionary<IranianAgent, bool> agentByWin;
         SensorManager sensorManager;
+        AgentManager agentManager;
+        int counterRound;
 
         public GameManager()
         {
             // Initialize the game manager
             Console.WriteLine("Game Manager initialized. Ready to start the game.");
             isWin = false;
-            agentByWin= new Dictionary<IranianAgent, bool>();
             sensorManager = new SensorManager();
+            agentManager = new AgentManager();
+            counterRound = 0;
         }
         public void Menu()
         {
@@ -50,7 +53,7 @@ namespace InvestigationGame
             // Logic to start the game
             for (int i = 0; i<2; i++)
             {
-                agentByWin.Add(new IranianAgent(i), false);
+                agentManager.agentByWin.Add(new Agent(i), false);
                 sensorManager.AddAgent(i);
             }
             Console.WriteLine("Game is starting...");
@@ -60,6 +63,7 @@ namespace InvestigationGame
         }
         public void chooseAgent()
         {
+            Dictionary<Agent, bool> agentByWin= agentManager.agentByWin;
             bool isTerminate = false;
             // Logic to choose an agent
             while (!isTerminate)
@@ -71,7 +75,7 @@ namespace InvestigationGame
                 foreach (var agent in agentByWin.Keys)
                 {
                     Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agentByWin[agent]}");
-                    if (agentByWin[agent]== false)
+                    if (agentManager.agentByWin[agent]== false)
                     {
                         isTerminate = false;
                     }
@@ -106,7 +110,7 @@ namespace InvestigationGame
             Console.WriteLine("Exiting the game. Goodbye!");
             Environment.Exit(0);
         }
-        public bool FindSensors(IranianAgent iranianAgent)
+        public bool FindSensors(Agent iranianAgent)
         {
             bool isFind = false;
 
@@ -172,7 +176,7 @@ namespace InvestigationGame
                 if (iranianAgent.sensorsCopy.Count==0)
                 {
                     isFind = true;
-                    agentByWin[iranianAgent] = true;
+                    agentManager.agentByWin[iranianAgent] = true;
                     Console.WriteLine("You found all sensors!");
                 }
 
