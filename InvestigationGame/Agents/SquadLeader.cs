@@ -1,66 +1,20 @@
-using InvestigationGame.Sensors;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvestigationGame
+namespace InvestigationGame.Agents
 {
-    enum SensorType
+    internal class SquadLeader : Agent
     {
-        Audio,
-        Thermal,
-        Pulse,
-        Motion,
-        Magnetic,
-        Signal,
-        Light
-    }
-    internal class IranianAgent
-    {
-        public int id;
-        public int rank;
-        public List<string> sensors;
-        public List<string> sensorsCopy;
-
-        public int capacity;
-        public int foundCount;
-
-        public IranianAgent(int id)
+        public SquadLeader(int id) : base(id)
         {
-            this.id = id;
-            this.rank = RandomRank();
-            SetCapacity();
-            sensors = new List<string>();
+            rank = 2; 
+            this.capacity = 4;
             RandomSensor();
-        }
 
-        public int RandomRank()
-        {
-            Random random = new Random();
-            return random.Next(1, 4);
         }
-        public void SetCapacity()
-        {
-            switch (rank)
-            {
-                case 1:
-                    capacity = 2;
-                    break;
-                case 2:
-                    capacity = 4;
-                    break;
-                case 3:
-                    capacity = 6;
-                    break;
-                default:
-                    capacity = 0;
-                    break;
-            }
-        }
-
         public void RandomSensor()
         {
             Random random = new Random();
@@ -95,12 +49,6 @@ namespace InvestigationGame
             sensorsCopy = new List<string>(sensors);
 
         }
-
-
-
-
-
-
-
     }
+    
 }

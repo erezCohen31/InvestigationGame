@@ -1,3 +1,4 @@
+using InvestigationGame.Agents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,29 +15,28 @@ namespace InvestigationGame.Sensors
             maxActivateCount = 3;
         }
 
-        public override bool ActivateSensor(IranianAgent iranianAgent, Dictionary<IranianAgent, bool> agentByWin)
+        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
-            if (base.ActivateSensor(iranianAgent, agentByWin))
+            if (base.ActivateSensor(iranianAgent, sensorsByAgent))
             {
                 return true;
             }
-            else if (agentByWin[iranianAgent] && activateCount < maxActivateCount)
+            foreach (Sensor sensor in sensorsByAgent)
             {
-                activateCount++;
-                Console.WriteLine($"You have activated the Pulse sensor {activateCount} times. You can activate it {maxActivateCount - activateCount} more times.");
-                return false;
+                if (sensor.type == this.type)
+                {
+                    if (sensor.ActivateCount >= maxActivateCount)
+                    {
+                        Console.WriteLine("You have reached the maximum activation count for the Pulse sensor.");
+                        isActive = false;
+                        iranianAgent.foundCount--;
+                        return false;
+                    }
+                    sensor.ActivateCount++;
+                    Console.WriteLine($"You have activated the Motion sensor {activateCount} times. You can activate it {maxActivateCount - activateCount} more times.");
+                    return false;
+                }
             }
-            else if (activateCount >= maxActivateCount)
-            {
-                Console.WriteLine("You have reached the maximum activation count for the Pulse sensor.");
-                isActive = false;
-                iranianAgent.foundCount--;
-                return false;
-            }
-
-
-
-
             return false;
         }
     }

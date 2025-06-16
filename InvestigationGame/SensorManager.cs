@@ -1,4 +1,4 @@
-﻿using InvestigationGame.Sensors;
+using InvestigationGame.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
