@@ -151,13 +151,16 @@ namespace InvestigationGame
                 }
 
 
-                if (currentSensor.ActivateSensor(iranianAgent, agentByWin))
+                if (currentSensor.ActivateSensor(iranianAgent, sensorManager.sensorsByAgent[iranianAgent.id]))
                 {
                     iranianAgent.foundCount++;
                     sensorManager.AddSensor(iranianAgent.id, currentSensor);
 
                     Console.WriteLine($"You found a {currentSensor.type} sensor!");
-                    Console.WriteLine($"you found{iranianAgent.foundCount}/{iranianAgent.capacity} ");
+                    if (iranianAgent.isDiscovered)
+                    {
+                        Console.WriteLine($"you found{iranianAgent.foundCount}/{iranianAgent.capacity} ");
+                    }
 
                 }
                 else

@@ -41,7 +41,7 @@ namespace InvestigationGame.Sensors
             get { return activateCount; }
             set { activateCount = value; }
         }
-        public virtual bool ActivateSensor(IranianAgent iranianAgent, Dictionary<IranianAgent, bool> agentByWin)
+        public virtual bool ActivateSensor(IranianAgent iranianAgent, List<Sensor> sensorsByAgent)
         {
             foreach (string sensorName in iranianAgent.sensorsCopy)
             {

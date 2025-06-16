@@ -24,9 +24,10 @@ namespace InvestigationGame
         public int rank;
         public List<string> sensors;
         public List<string> sensorsCopy;
-
+        public bool isDiscovered = false;
         public int capacity;
         public int foundCount;
+        public int notCounterAttack;
 
         public IranianAgent(int id)
         {
@@ -35,6 +36,7 @@ namespace InvestigationGame
             SetCapacity();
             sensors = new List<string>();
             RandomSensor();
+            notCounterAttack = 0;
         }
 
         public int RandomRank()
