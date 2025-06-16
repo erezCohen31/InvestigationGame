@@ -14,7 +14,7 @@ namespace InvestigationGame.Sensors
             this.type = "Magnetic";
         }
 
-        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
+        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent )
         {
             if (base.ActivateSensor(iranianAgent, sensorsByAgent))
             {

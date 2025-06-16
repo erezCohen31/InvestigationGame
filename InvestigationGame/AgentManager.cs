@@ -1,4 +1,4 @@
-﻿using InvestigationGame.Agents;
+using InvestigationGame.Agents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +10,9 @@ namespace InvestigationGame
     internal class AgentManager
     {
          public Dictionary<Agent, bool> agentByWin;
+        public AgentManager()
+        {
+            agentByWin = new Dictionary<Agent, bool>();
+        }
     }
 }

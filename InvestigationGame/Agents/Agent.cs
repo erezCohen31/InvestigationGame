@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,12 +19,13 @@ namespace InvestigationGame.Agents
         public Agent(int id)
         {
             this.id = id;
-            sensors = new List<string>();
-            sensorsCopy = new List<string>();
             foundCount = 0;
             notCounterAttack = 0;
-            this.id = id;
-            
+            sensors = new List<string>();
+
+
         }
+
+
     }
 }

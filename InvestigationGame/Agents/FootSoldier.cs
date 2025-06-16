@@ -23,17 +23,13 @@ namespace InvestigationGame.Agents
     {
 
 
-        public FootSoldier(int id): base(id)
+        public FootSoldier(int id) : base(id)
         {
             rank =1;
             this.capacity = 2;
+            RandomSensor();
         }
 
-        public int RandomRank()
-        {
-            Random random = new Random();
-            return random.Next(1, 4);
-        }
 
 
         public void RandomSensor()
@@ -70,7 +66,6 @@ namespace InvestigationGame.Agents
             sensorsCopy = new List<string>(sensors);
 
         }
-
 
 
 
