@@ -1,2 +1,12 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+using InvestigationGame;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.Title = "Investigation Game - Track the Iranian Agent";
+
+        GameManager gameManager = new GameManager();
+        gameManager.Menu();
+    }
+}
