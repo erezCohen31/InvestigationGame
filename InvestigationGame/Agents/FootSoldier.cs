@@ -23,7 +23,7 @@ namespace InvestigationGame.Agents
     {
 
 
-        public FootSoldier(int id) : base(id)
+        public FootSoldier() : base()
         {
             rank =1;
             this.capacity = 2;

@@ -43,7 +43,7 @@ namespace InvestigationGame.Sensors
             set { activateCount = value; }
         }
 
-        public virtual bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
+        public virtual int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             try
             {
@@ -62,7 +62,7 @@ namespace InvestigationGame.Sensors
                 if (toRemove != null)
                 {
                     iranianAgent.sensorsCopy.Remove(toRemove);
-                    return true;
+                    return 0;
                 }
             }
             catch (Exception ex)
@@ -70,7 +70,7 @@ namespace InvestigationGame.Sensors
                 Console.WriteLine($"An error occurred while activating the sensor '{type}': {ex.Message}");
             }
 
-            return false;
+            return -1;
         }
 
 

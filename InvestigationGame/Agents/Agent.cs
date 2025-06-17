@@ -16,49 +16,27 @@ namespace InvestigationGame.Agents
         public int capacity;
         public int foundCount;
         public int notCounterAttack;
-        public Agent(int id)
+        public Agent()
         {
-            this.id = id;
             foundCount = 0;
             notCounterAttack = 0;
             sensors = new List<string>();
-
-
+            sensorsCopy = new List<string>();
         }
         public void RandomSensor()
         {
             try
             {
                 Random random = new Random();
+                var sensorTypes = Enum.GetValues(typeof(SensorType)).Cast<SensorType>().ToList();
+
                 for (int i = 0; i < capacity; i++)
                 {
-                    SensorType sensorType = (SensorType)random.Next(0, Enum.GetValues(typeof(SensorType)).Length);
-                    switch (sensorType)
-                    {
-                        case SensorType.Audio:
-                            sensors.Add("Audio");
-                            break;
-                        case SensorType.Thermal:
-                            sensors.Add("Thermal");
-                            break;
-                        case SensorType.Pulse:
-                            sensors.Add("Pulse");
-                            break;
-                        case SensorType.Motion:
-                            sensors.Add("Motion");
-                            break;
-                        case SensorType.Magnetic:
-                            sensors.Add("Magnetic");
-                            break;
-                        case SensorType.Signal:
-                            sensors.Add("Signal");
-                            break;
-                        case SensorType.Light:
-                            sensors.Add("Light");
-                            break;
-                    }
+                    SensorType randomType = sensorTypes[random.Next(sensorTypes.Count)];
+                    sensors.Add(randomType.ToString());
                 }
-                sensorsCopy = new List<string>(sensors);
+
+                UpdateSensorsCopy();
             }
             catch (Exception ex)
             {
@@ -67,5 +45,12 @@ namespace InvestigationGame.Agents
         }
 
 
+
+        
+        public void UpdateSensorsCopy()
+        {
+            sensorsCopy = new List<string>(sensors);
+        }
+        
     }
 }

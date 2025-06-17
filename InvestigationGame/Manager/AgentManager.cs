@@ -5,14 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvestigationGame
+namespace InvestigationGame.Manager
 {
     internal class AgentManager
     {
-         public Dictionary<Agent, bool> agentByWin;
+        public Dictionary<int, bool> agentByWin;
+        public List<Agent> agents;
         public AgentManager()
         {
-            agentByWin = new Dictionary<Agent, bool>();
+            agentByWin = new Dictionary<int, bool>();
+            agents = new List<Agent>();
         }
     }
 }

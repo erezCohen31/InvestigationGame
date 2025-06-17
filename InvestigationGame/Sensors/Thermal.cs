@@ -14,9 +14,9 @@ namespace InvestigationGame.Sensors
             this.type = "Thermal";
         }
 
-        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
+        public override int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
-            if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+            if (base.ActivateSensor(iranianAgent, sensorsByAgent) == 0)
             {
                 if (iranianAgent.sensorsCopy.Count > 0)
                 {
@@ -26,9 +26,9 @@ namespace InvestigationGame.Sensors
                 {
                     Console.WriteLine("No more sensors to reveal.");
                 }
-                return true;
+                return 0;
             }
-            return false;
+            return -1;
         }
     }
 }
