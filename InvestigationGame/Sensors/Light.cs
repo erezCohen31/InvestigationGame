@@ -14,22 +14,22 @@ namespace InvestigationGame.Sensors
             this.type = "Light";
         }
 
-        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
+        public override int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             try
             {
-                if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+                if (base.ActivateSensor(iranianAgent, sensorsByAgent)==0)
                 {
                     iranianAgent.isDiscovered = true;
                     Console.WriteLine($"You have discovered the rank of Iranian agent: {iranianAgent.rank}");
-                    return true;
+                    return 0;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred while activating the Light sensor: {ex.Message}");
             }
-            return false;
+            return -1;
         }
     }
     

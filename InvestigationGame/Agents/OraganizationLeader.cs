@@ -8,7 +8,7 @@ namespace InvestigationGame.Agents
 {
     internal class OraganizationLeader:Agent
     {
-        public OraganizationLeader(int id) : base(id)
+        public OraganizationLeader() : base()
         {
             rank = 4; 
             this.capacity = 8;

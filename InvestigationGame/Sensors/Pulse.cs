@@ -14,13 +14,13 @@ namespace InvestigationGame.Sensors
             this.type = "Pulse";
             maxActivateCount = 3;
         }
-        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
+        public override int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             try
             {
-                if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+                if (base.ActivateSensor(iranianAgent, sensorsByAgent) == 0)
                 {
-                    return true;
+                    return 0;
                 }
 
                 foreach (Sensor sensor in sensorsByAgent)
@@ -32,12 +32,12 @@ namespace InvestigationGame.Sensors
                             Console.WriteLine("You have reached the maximum activation count for the Pulse sensor.");
                             isActive = false;
                             iranianAgent.foundCount--;
-                            return false;
+                            return sensor.Id;
                         }
 
                         sensor.ActivateCount++;
                         Console.WriteLine($"You have activated the Pulse sensor {sensor.ActivateCount} times. You can activate it {maxActivateCount - sensor.ActivateCount} more times.");
-                        return false;
+                        return sensor.Id;
                     }
                 }
             }
@@ -46,7 +46,7 @@ namespace InvestigationGame.Sensors
                 Console.WriteLine($"An error occurred while activating Pulse sensor: {ex.Message}");
             }
 
-            return false;
+            return -1;
         }
 
     }

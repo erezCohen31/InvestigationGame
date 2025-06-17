@@ -14,21 +14,21 @@ namespace InvestigationGame.Sensors
             this.type = "Magnetic";
         }
 
-        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent )
+        public override int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent )
         {
             try
             {
-                if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+                if (base.ActivateSensor(iranianAgent, sensorsByAgent) == 0)
                 {
                     iranianAgent.notCounterAttack +=2;
-                    return true;
+                    return 0;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred while activating the Magnetic sensor: {ex.Message}");
             }
-            return false;
+            return -1;
         }
     }
 

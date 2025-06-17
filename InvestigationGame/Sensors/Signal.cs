@@ -14,15 +14,15 @@ namespace InvestigationGame.Sensors
             this.type = "Signal";
         }
 
-        public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
+        public override int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
-            if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+            if (base.ActivateSensor(iranianAgent, sensorsByAgent) == 0)
             {
                 iranianAgent.isDiscovered = true;
                 Console.WriteLine($"You have discovered the rank of Iranian agent: {iranianAgent.rank}");
-                return true;
+                return 0;
             }
-            return false;
+            return -1;
         }
     }
     

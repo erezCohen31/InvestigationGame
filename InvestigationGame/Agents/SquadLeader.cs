@@ -8,7 +8,7 @@ namespace InvestigationGame.Agents
 {
     internal class SquadLeader : Agent
     {
-        public SquadLeader(int id) : base(id)
+        public SquadLeader() : base()
         {
             rank = 2; 
             this.capacity = 4;

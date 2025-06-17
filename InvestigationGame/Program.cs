@@ -1,4 +1,4 @@
-using InvestigationGame;
+using InvestigationGame.Manager;
 
 class Program
 {
