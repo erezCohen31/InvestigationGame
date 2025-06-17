@@ -16,11 +16,18 @@ namespace InvestigationGame.Sensors
 
         public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
-            if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+            try
             {
-                iranianAgent.isDiscovered = true;
-                Console.WriteLine($"You have discovered the rank of Iranian agent: {iranianAgent.rank}");
-                return true;
+                if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+                {
+                    iranianAgent.isDiscovered = true;
+                    Console.WriteLine($"You have discovered the rank of Iranian agent: {iranianAgent.rank}");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while activating the Light sensor: {ex.Message}");
             }
             return false;
         }

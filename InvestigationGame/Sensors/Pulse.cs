@@ -14,31 +14,41 @@ namespace InvestigationGame.Sensors
             this.type = "Pulse";
             maxActivateCount = 3;
         }
-
         public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
-            if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+            try
             {
-                return true;
-            }
-            foreach (Sensor sensor in sensorsByAgent)
-            {
-                if (sensor.type == this.type)
+                if (base.ActivateSensor(iranianAgent, sensorsByAgent))
                 {
-                    if (sensor.ActivateCount >= maxActivateCount)
+                    return true;
+                }
+
+                foreach (Sensor sensor in sensorsByAgent)
+                {
+                    if (sensor.type == this.type)
                     {
-                        Console.WriteLine("You have reached the maximum activation count for the Pulse sensor.");
-                        isActive = false;
-                        iranianAgent.foundCount--;
+                        if (sensor.ActivateCount >= maxActivateCount)
+                        {
+                            Console.WriteLine("You have reached the maximum activation count for the Pulse sensor.");
+                            isActive = false;
+                            iranianAgent.foundCount--;
+                            return false;
+                        }
+
+                        sensor.ActivateCount++;
+                        Console.WriteLine($"You have activated the Pulse sensor {sensor.ActivateCount} times. You can activate it {maxActivateCount - sensor.ActivateCount} more times.");
                         return false;
                     }
-                    sensor.ActivateCount++;
-                    Console.WriteLine($"You have activated the Motion sensor {activateCount} times. You can activate it {maxActivateCount - activateCount} more times.");
-                    return false;
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while activating Pulse sensor: {ex.Message}");
+            }
+
             return false;
         }
+
     }
 
 }

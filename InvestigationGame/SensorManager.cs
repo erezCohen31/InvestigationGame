@@ -32,6 +32,14 @@ namespace InvestigationGame
             }
 
         }
+        public List<Sensor> GetSensorsByAgent(int agentId)
+        {
+            if (sensorsByAgent.ContainsKey(agentId))
+            {
+                return sensorsByAgent[agentId];
+            }
+            return new List<Sensor>(); // liste vide si pas trouvé
+        }
 
     }
 }
