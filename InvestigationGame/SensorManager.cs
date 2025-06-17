@@ -38,7 +38,7 @@ namespace InvestigationGame
             {
                 return sensorsByAgent[agentId];
             }
-            return new List<Sensor>(); // liste vide si pas trouvé
+            return new List<Sensor>();
         }
 
     }

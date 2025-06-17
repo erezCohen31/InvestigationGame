@@ -6,7 +6,14 @@ class Program
     {
         Console.Title = "Investigation Game - Track the Iranian Agent";
 
-        GameManager gameManager = new GameManager();
-        gameManager.Menu();
+        try
+        {
+            GameManager gameManager = new GameManager();
+            gameManager.Menu();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Une erreur inattendue est survenue : {ex.Message}");
+        }
     }
 }
