@@ -252,75 +252,7 @@ namespace InvestigationGame.DB
             }
         }
 
-        public Agent GetAgentById(int agentId)
-        {
-            try
-            {
-                using (var connection = new MySqlConnection(connectionString.Replace("Database=InvestigationGame;", "")))
-                {
-                    connection.Open();
-                    
-                    using (var cmdUseDb = new MySqlCommand("USE InvestigationGame;", connection))
-                    {
-                        cmdUseDb.ExecuteNonQuery();
-                    }
-
-                    string query = "SELECT * FROM Agents WHERE Id = @AgentId";
-                    
-                    using (var command = new MySqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@AgentId", agentId);
-                        
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                int rank = reader.GetInt32("Rank");
-                                
-                                Agent agent = rank switch
-                                {
-                                    1 => new FootSoldier(),
-                                    2 => new SquadLeader(),
-                                    3 => new SeniorCommander(),
-                                    4 => new OraganizationLeader(),
-                                    _ => throw new Exception($"Unknown agent rank: {rank}")
-                                };
-                                
-                                agent.id = reader.GetInt32("Id");
-                                agent.isDiscovered = reader.GetBoolean("IsDiscovered");
-                                agent.foundCount = reader.GetInt32("FoundCount");
-                                agent.notCounterAttack = reader.GetInt32("NotCounterAttack");
-                                
-                                if (!reader.IsDBNull(reader.GetOrdinal("Sensors")))
-                                {
-                                    string sensorsJson = reader.GetString("Sensors");
-                                    agent.sensors = JsonSerializer.Deserialize<List<string>>(sensorsJson) ?? new List<string>();
-                                }
-                                
-                                if (!reader.IsDBNull(reader.GetOrdinal("SensorsCopy")))
-                                {
-                                    string sensorsCopyJson = reader.GetString("SensorsCopy");
-                                    agent.sensorsCopy = JsonSerializer.Deserialize<List<string>>(sensorsCopyJson) ?? new List<string>();
-                                }
-                                else
-                                {
-                                    // Si pas de copie, on la crée à partir de la liste principale
-                                    agent.UpdateSensorsCopy();
-                                }
-                                
-                                return agent;
-                            }
-                        }
-                    }                }
-                
-                return null; 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error retrieving agent with ID {agentId}: {ex.Message}");
-                throw;
-            }
-        }
+  
 
         public List<Agent> GetAllAgents()
         {
