@@ -303,7 +303,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
+            var sensors = sensorManager.GetSensorsByAgent(iranianAgent.id);
 
 
             if (sensors.Count > 0)
@@ -326,7 +326,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
+            var sensors = sensorManager.GetSensorsByAgent(iranianAgent.id);
             Random rnd = new Random();
             for (int i = 0; i < 2 && sensors.Count > 0; i++)
             {
@@ -347,7 +347,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
+            var sensors = sensorManager.GetSensorsByAgent(iranianAgent.id);
             foreach (var sensor in sensors)
             {
                 iranianAgent.sensorsCopy.Add(sensor.type);
