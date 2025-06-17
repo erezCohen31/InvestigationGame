@@ -116,6 +116,7 @@ namespace InvestigationGame.Manager
                 Console.WriteLine("\n=== Game Setup ===");
                 Console.WriteLine("1. Create new agents");
                 Console.WriteLine("2. Use existing agents from database");
+                Console.WriteLine("3. Exit the game");
                 Console.Write("Choose an option (1-2): ");
 
                 string choice = Console.ReadLine();
@@ -137,7 +138,8 @@ namespace InvestigationGame.Manager
 
                     case "2":
                         var agents = agentDB.GetAllAgents();
-                        if (agents.Count == 0)
+                        if (agents.Count == 0 || agentManager.agentByWin.Values.All(found => found))
+
                         {
                             Console.WriteLine("No agents found in database. Creating 2 new agents by default.");
                             InitializeAgents(2);
@@ -146,6 +148,10 @@ namespace InvestigationGame.Manager
                         {
                             Console.WriteLine($"\nFound {agents.Count} agents in database.");
                         }
+                        break;
+
+                    case "3":
+                        ExitGame();
                         break;
 
                     default:
@@ -297,7 +303,9 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
+            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
+
+
             if (sensors.Count > 0)
             {
                 Random rnd = new Random();
@@ -318,7 +326,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
+            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
             Random rnd = new Random();
             for (int i = 0; i < 2 && sensors.Count > 0; i++)
             {
@@ -339,7 +347,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
+            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
             foreach (var sensor in sensors)
             {
                 iranianAgent.sensorsCopy.Add(sensor.type);
@@ -376,10 +384,10 @@ namespace InvestigationGame.Manager
                     Console.WriteLine("Error: Agent not found in sensor manager");
                     return false;
                 }
-                int response = currentSensor.ActivateSensor(iranianAgent, agentSensors);
+                int response = currentSensor.ActivateSensor(iranianAgent, sensorManager.GetSensorsByAgent(iranianAgent.id));
                 if (response > 0)
                 {
-                    sensorDB.UpdateSensorActivateCount(response, currentSensor.ActivateCount);
+                    sensorDB.UpdateSensorActivateCount(response, iranianAgent.foundCount);
                     sensorDB.UpdateSensorStatus(response, currentSensor.IsActive);
                 }
 
@@ -462,6 +470,7 @@ namespace InvestigationGame.Manager
             Console.WriteLine("5. Magnetic");
             Console.WriteLine("6. Signal");
             Console.WriteLine("7. Light");
+            Console.WriteLine("8. Return to Menu");
 
             switch (Console.ReadLine())
             {
@@ -472,6 +481,7 @@ namespace InvestigationGame.Manager
                 case "5": return new Magnetic();
                 case "6": return new Signal();
                 case "7": return new Light();
+
                 default: return null;
             }
         }

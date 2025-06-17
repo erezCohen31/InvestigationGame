@@ -10,25 +10,28 @@ namespace InvestigationGame.Manager
     internal class SensorManager
     {
 
-       public Dictionary<int, List<Sensor>> sensorsByAgent;
+        public Dictionary<int, List<int>> sensorsByAgent;
+        public List<Sensor> sensors;
         public SensorManager()
         {
-            sensorsByAgent = new Dictionary<int, List<Sensor>>();
+            sensorsByAgent = new Dictionary<int, List<int>>();
+            sensors = new List<Sensor>();
         }
 
-        public void AddSensor(int agentId,Sensor sensor)
+        public void AddSensor(int agentId, Sensor sensor)
         {
             AddAgent(agentId);
-            
-            sensorsByAgent[agentId].Add(sensor);
-           
+
+            sensorsByAgent[agentId].Add(sensor.Id);
+            sensors.Add(sensor);
+
 
         }
         public void AddAgent(int agentId)
         {
             if (!sensorsByAgent.ContainsKey(agentId))
             {
-                sensorsByAgent[agentId] = new List<Sensor>();
+                sensorsByAgent[agentId] = new List<int>();
             }
 
         }
@@ -36,7 +39,7 @@ namespace InvestigationGame.Manager
         {
             if (sensorsByAgent.ContainsKey(agentId))
             {
-                return sensorsByAgent[agentId];
+                return sensors.Where(s => sensorsByAgent[agentId].Contains(s.Id)).ToList();
             }
             return new List<Sensor>();
         }
