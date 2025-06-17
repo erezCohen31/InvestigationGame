@@ -16,15 +16,19 @@ namespace InvestigationGame.Sensors
 
         public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
-            if(base.ActivateSensor(iranianAgent,sensorsByAgent))
+            if (base.ActivateSensor(iranianAgent, sensorsByAgent))
             {
-                Console.WriteLine($"you have revealed a sensor: {iranianAgent.sensorsCopy[0]}");
+                if (iranianAgent.sensorsCopy.Count > 0)
+                {
+                    Console.WriteLine($"You have revealed another sensor: {iranianAgent.sensorsCopy[0]}");
+                }
+                else
+                {
+                    Console.WriteLine("No more sensors to reveal.");
+                }
                 return true;
             }
             return false;
         }
-       
     }
 }
-
-

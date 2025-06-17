@@ -16,10 +16,17 @@ namespace InvestigationGame.Sensors
 
         public override bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent )
         {
-            if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+            try
             {
-                iranianAgent.notCounterAttack +=2;
-                return true;
+                if (base.ActivateSensor(iranianAgent, sensorsByAgent))
+                {
+                    iranianAgent.notCounterAttack +=2;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while activating the Magnetic sensor: {ex.Message}");
             }
             return false;
         }

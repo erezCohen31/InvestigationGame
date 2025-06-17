@@ -42,28 +42,36 @@ namespace InvestigationGame.Sensors
             get { return activateCount; }
             set { activateCount = value; }
         }
+
         public virtual bool ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
-            foreach (string sensorName in iranianAgent.sensorsCopy)
+            try
             {
-
-                if (sensorName == this.type)
+                string toRemove = null;
+                foreach (string sensorName in iranianAgent.sensorsCopy)
                 {
-                    this.isActive = true;
-                    iranianAgent.sensorsCopy.Remove(sensorName);
-                    activateCount++;
-
-                    return true;
+                    if (sensorName == this.type)
+                    {
+                        toRemove = sensorName;
+                        this.isActive = true;
+                        activateCount++;
+                        break;
+                    }
                 }
 
-
+                if (toRemove != null)
+                {
+                    iranianAgent.sensorsCopy.Remove(toRemove);
+                    return true;
+                }
             }
-
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while activating the sensor '{type}': {ex.Message}");
+            }
 
             return false;
         }
-
 
 
 

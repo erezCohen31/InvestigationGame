@@ -2,10 +2,7 @@ using InvestigationGame.Agents;
 using InvestigationGame.Sensors;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InvestigationGame
 {
@@ -17,21 +14,22 @@ namespace InvestigationGame
 
         public GameManager()
         {
-            // Initialize the game manager
             Console.WriteLine("Game Manager initialized. Ready to start the game.");
             sensorManager = new SensorManager();
             agentManager = new AgentManager();
             counterRound = 0;
         }
+
         public void Menu()
         {
-            // Initialize the game menu
-
             Console.WriteLine("Welcome to the Investigation Game!");
             Console.WriteLine("Please select an option:");
             Console.WriteLine("1. Start Game");
             Console.WriteLine("2. Exit");
-            switch (Console.ReadLine())
+
+            var input = Console.ReadLine();
+
+            switch (input)
             {
                 case "1":
                     StartGame();
@@ -45,207 +43,199 @@ namespace InvestigationGame
                     break;
             }
         }
+
         public void StartGame()
         {
-            // Logic to start the game
-            for (int i = 0; i<2; i++)
+            try
             {
-                Random random = new Random();
-                int rank = random.Next(1, 5); // Random rank between 1 and 4
-                switch (rank)
+                InitializeAgents();
+                Console.WriteLine("Game is starting...");
+                ChooseAgentLoop();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+        }
+
+        private void InitializeAgents()
+        {
+            Random random = new Random();
+            for (int i = 0; i < 2; i++)
+            {
+                int rank = random.Next(1, 5);
+                Agent agent = rank switch
                 {
-                    case 1:
-                        agentManager.agentByWin.Add(new FootSoldier(i), false);
-                        break;
-                    case 2:
-                        agentManager.agentByWin.Add(new SquadLeader(i), false);
-                        break;
-                    case 3:
-                        agentManager.agentByWin.Add(new SeniorCommander(i), false);
-                        break;
-                    case 4:
-                        agentManager.agentByWin.Add(new OraganizationLeader(i), false);
-                        break;
-                }
+                    1 => new FootSoldier(i),
+                    2 => new SquadLeader(i),
+                    3 => new SeniorCommander(i),
+                    4 => new OraganizationLeader(i),
+                    _ => throw new Exception("Rank out of bounds")
+                };
+                agentManager.agentByWin.Add(agent, false);
                 sensorManager.AddAgent(i);
             }
-            Console.WriteLine("Game is starting...");
-            chooseAgent();
-
         }
-        public void chooseAgent()
+
+        private void ChooseAgentLoop()
         {
-            Agent iranianAgent = null;
-            Dictionary<Agent, bool> agentByWin = agentManager.agentByWin;
-            bool isTerminate = false;
-            // Logic to choose an agent
-            while (!isTerminate)
+            bool isGameOver = false;
+
+            while (!isGameOver)
             {
+                DisplayAgentsStatus();
 
-                isTerminate = true;
-                Console.WriteLine($"Choose an agent by entering their ID:");
-                int agentId;
-                foreach (var agent in agentByWin.Keys)
-                {
-                    Console.WriteLine($"Agent ID: {agent.id}, , Find: {agentByWin[agent]}");
-                    if (agentManager.agentByWin[agent]== false)
-                    {
-                        isTerminate = false;
-                    }
-                }
-                while (!int.TryParse(Console.ReadLine(), out agentId) || agentId < 0 || agentId >= agentByWin.Count)
-                {
-                    Console.WriteLine("Invalid ID. Please enter a valid agent ID (0-9):");
-                }
-                iranianAgent = agentByWin.Keys.ElementAt(agentId);
-                Console.WriteLine($"You have chosen Agent {iranianAgent.id} with rank {iranianAgent.rank} and capacity {iranianAgent.capacity}.");
+                int agentId = GetValidAgentId();
 
-                FindSensors(iranianAgent);
-                isTerminate = true;
-                foreach (var agent in agentByWin.Keys)
-                {
-                    if (agentByWin[agent]== false)
-                    {
-                        isTerminate = false;
-                    }
-                }
-                if (isTerminate)
-                {
+                Agent chosenAgent = agentManager.agentByWin.Keys.ElementAt(agentId);
+
+                Console.WriteLine($"You have chosen Agent {chosenAgent.id}.");
+
+                FindSensors(chosenAgent);
+
+                isGameOver = CheckIfGameOver();
+
+                if (isGameOver)
                     ExitGame();
-                }
-
             }
+        }
+
+        private void DisplayAgentsStatus()
+        {
+            var agentByWin = agentManager.agentByWin;
+            foreach (var agent in agentByWin.Keys)
+            {
+                if (agent.isDiscovered || agentByWin[agent])
+                    Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agentByWin[agent]} in percent: {agent.foundCount*100/agent.capacity} %");
+                else
+                    Console.WriteLine($"Agent ID: {agent.id}, Find: {agentByWin[agent]}");
+            }
+        }
+
+        private int GetValidAgentId()
+        {
+            int agentId;
+            while (!int.TryParse(Console.ReadLine(), out agentId) || agentId < 0 || agentId >= agentManager.agentByWin.Count)
+            {
+                Console.WriteLine($"Invalid ID. Please enter a valid agent ID (0-{agentManager.agentByWin.Count - 1}):");
+            }
+            return agentId;
+        }
+
+        private bool CheckIfGameOver()
+        {
+            return agentManager.agentByWin.Values.All(found => found);
         }
 
         public void ExitGame()
         {
-            // Logic to exit the game
             Console.WriteLine("Exiting the game. Goodbye!");
             Environment.Exit(0);
         }
 
         public void CounterAttack(Agent iranianAgent)
         {
-            if (counterRound%3==0 && iranianAgent.rank== 2|| iranianAgent.rank==4)
+            try
             {
-                if (iranianAgent.notCounterAttack > 0)
+                if (counterRound % 3 == 0)
                 {
-                    iranianAgent.notCounterAttack--;
-                    Console.WriteLine("You have been attacked by the enemy. You lost one notCounterAttack point.");
-                }
-                else
-                {
-                    var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
-
-                    if (sensors.Count > 0)
+                    if (iranianAgent.rank == 2 || iranianAgent.rank == 4)
                     {
-                        Random rnd = new Random();
-                        int indexToRemove = rnd.Next(sensors.Count);
-                        iranianAgent.sensorsCopy.Add(sensors[indexToRemove].type);
-                        sensors.RemoveAt(indexToRemove);
-                        iranianAgent.foundCount--;
-                        Console.WriteLine("You have been attacked by the enemy. You lost a sensor");
+                        HandleCounterAttackSingleSensorLoss(iranianAgent);
                     }
+                    else if (iranianAgent.rank == 3)
+                    {
+                        HandleCounterAttackDoubleSensorLoss(iranianAgent);
+                    }
+                }
+                if (counterRound % 10 == 0 && iranianAgent.rank == 4)
+                {
+                    HandleCounterAttackAllSensorsLoss(iranianAgent);
                 }
             }
-            if (counterRound%3==0 && iranianAgent.rank== 3)
+            catch (Exception ex)
             {
-                if (iranianAgent.notCounterAttack > 0)
-                {
-                    iranianAgent.notCounterAttack--;
-                    Console.WriteLine("You have been attacked by the enemy. You lost one notCounterAttack point.");
-                }
-                else
-                {
-                    var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
-
-                    for (int i = 0; i<2; i++)
-                    {
-                        if (sensors.Count > 0)
-                        {
-                            Random rnd = new Random();
-                            int indexToRemove = rnd.Next(sensors.Count);
-                            iranianAgent.sensorsCopy.Add(sensors[indexToRemove].type);
-                            sensors.RemoveAt(indexToRemove);
-                            iranianAgent.foundCount--;
-
-                        }
-                    }
-                    Console.WriteLine("You have been attacked by the enemy. You lost 2 sensors");
-
-
-
-                }
-            }
-            if (counterRound%10==0 && iranianAgent.rank== 4)
-            {
-                if (iranianAgent.notCounterAttack > 0)
-                {
-                    iranianAgent.notCounterAttack--;
-                    Console.WriteLine("You have been attacked by the enemy. You lost one notCounterAttack point.");
-                }
-                else
-                {
-                    var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
-                    foreach (var sensor in sensors)
-                    {
-                        iranianAgent.sensorsCopy.Add(sensor.type);
-                    }
-                    sensors.Clear();
-                    iranianAgent.foundCount=0;
-                    Console.WriteLine("All your sensors have been removed by the enemy attack.");
-
-
-                }
+                Console.WriteLine($"An error occurred during the counter-attack: {ex.Message}");
             }
         }
+
+        private void HandleCounterAttackSingleSensorLoss(Agent iranianAgent)
+        {
+            if (iranianAgent.notCounterAttack > 0)
+            {
+                iranianAgent.notCounterAttack--;
+                Console.WriteLine("You have been attacked by the enemy. You lost one notCounterAttack point.");
+                return;
+            }
+
+            var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
+            if (sensors.Count > 0)
+            {
+                Random rnd = new Random();
+                int indexToRemove = rnd.Next(sensors.Count);
+                iranianAgent.sensorsCopy.Add(sensors[indexToRemove].type);
+                sensors.RemoveAt(indexToRemove);
+                iranianAgent.foundCount--;
+                Console.WriteLine("You have been attacked by the enemy. You lost a sensor");
+            }
+        }
+
+        private void HandleCounterAttackDoubleSensorLoss(Agent iranianAgent)
+        {
+            if (iranianAgent.notCounterAttack > 0)
+            {
+                iranianAgent.notCounterAttack--;
+                Console.WriteLine("You have been attacked by the enemy. You lost one notCounterAttack point.");
+                return;
+            }
+
+            var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
+            Random rnd = new Random();
+            for (int i = 0; i < 2 && sensors.Count > 0; i++)
+            {
+                int indexToRemove = rnd.Next(sensors.Count);
+                iranianAgent.sensorsCopy.Add(sensors[indexToRemove].type);
+                sensors.RemoveAt(indexToRemove);
+                iranianAgent.foundCount--;
+            }
+            Console.WriteLine("You have been attacked by the enemy. You lost 2 sensors");
+        }
+
+        private void HandleCounterAttackAllSensorsLoss(Agent iranianAgent)
+        {
+            if (iranianAgent.notCounterAttack > 0)
+            {
+                iranianAgent.notCounterAttack--;
+                Console.WriteLine("You have been attacked by the enemy. You lost one notCounterAttack point.");
+                return;
+            }
+
+            var sensors = sensorManager.sensorsByAgent[iranianAgent.id];
+            foreach (var sensor in sensors)
+            {
+                iranianAgent.sensorsCopy.Add(sensor.type);
+            }
+            sensors.Clear();
+            iranianAgent.foundCount = 0;
+            Console.WriteLine("All your sensors have been removed by the enemy attack.");
+        }
+
         public bool FindSensors(Agent iranianAgent)
         {
-            bool isFind = false;
             counterRound++;
             CounterAttack(iranianAgent);
 
+            bool isFind = false;
 
             while (!isFind)
             {
-                Sensor currentSensor = null;
-                Console.WriteLine("enter a sensor.");
-                Console.WriteLine("1. Audio");
-                Console.WriteLine("2. Thermal");
-                Console.WriteLine("3. Pulse");
-                Console.WriteLine("4. Motion");
-                Console.WriteLine("5. Magnetic");
-                Console.WriteLine("6. Signal");
-                Console.WriteLine("7. Light");
+                Sensor currentSensor = PromptSensorSelection();
 
-                switch (Console.ReadLine())
+                if (currentSensor == null)
                 {
-                    case "1":
-                        currentSensor = new Audio();
-                        break;
-                    case "2":
-                        currentSensor = new Thermal();
-                        break;
-                    case "3":
-                        currentSensor = new Pulse();
-                        break;
-                    case "4":
-                        currentSensor =new Motion();
-                        break;
-                    case "5":
-                        currentSensor =new Magnetic();
-                        break;
-                    case "6":
-                        currentSensor =new Signal();
-                        break;
-                    case "7":
-                        currentSensor =new Light();
-                        break;
-                    default:
-                        Console.WriteLine("Invalid sensor type. Please try again.");
-                        break;
+                    Console.WriteLine("Invalid sensor type. Please try again.");
+                    continue;
                 }
-
 
                 if (currentSensor.ActivateSensor(iranianAgent, sensorManager.sensorsByAgent[iranianAgent.id]))
                 {
@@ -255,27 +245,51 @@ namespace InvestigationGame
                     Console.WriteLine($"You found a {currentSensor.type} sensor!");
                     if (iranianAgent.isDiscovered)
                     {
-                        Console.WriteLine($"you found{iranianAgent.foundCount}/{iranianAgent.capacity} ");
+                        Console.WriteLine($"You found {iranianAgent.foundCount}/{iranianAgent.capacity} sensors.");
                     }
-
+                    else
+                    {
+                        Console.WriteLine($"You found {iranianAgent.foundCount} sensors.");
+                    }
                 }
                 else
                 {
                     Console.WriteLine("You didn't find the sensor. Try again.");
-
                 }
 
-                if (iranianAgent.sensorsCopy.Count==0)
+                if (iranianAgent.sensorsCopy.Count == 0)
                 {
                     isFind = true;
                     agentManager.agentByWin[iranianAgent] = true;
-                    Console.WriteLine("You found all sensors!");
+                    Console.WriteLine($"You found {iranianAgent.foundCount*100/iranianAgent.capacity} % sensors!");
                 }
-
             }
-            return isFind;
 
+            return isFind;
         }
 
+        private Sensor PromptSensorSelection()
+        {
+            Console.WriteLine("Enter a sensor type:");
+            Console.WriteLine("1. Audio");
+            Console.WriteLine("2. Thermal");
+            Console.WriteLine("3. Pulse");
+            Console.WriteLine("4. Motion");
+            Console.WriteLine("5. Magnetic");
+            Console.WriteLine("6. Signal");
+            Console.WriteLine("7. Light");
+
+            switch (Console.ReadLine())
+            {
+                case "1": return new Audio();
+                case "2": return new Thermal();
+                case "3": return new Pulse();
+                case "4": return new Motion();
+                case "5": return new Magnetic();
+                case "6": return new Signal();
+                case "7": return new Light();
+                default: return null;
+            }
+        }
     }
 }
