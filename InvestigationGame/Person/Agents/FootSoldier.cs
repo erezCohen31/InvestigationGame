@@ -6,7 +6,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvestigationGame.Agents
+namespace InvestigationGame.Personn.Agents
 {
     enum SensorType
     {
@@ -26,7 +26,7 @@ namespace InvestigationGame.Agents
         public FootSoldier() : base()
         {
             rank =1;
-            this.capacity = 2;
+            capacity = 2;
             RandomSensor();
         }
 

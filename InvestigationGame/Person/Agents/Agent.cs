@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvestigationGame.Agents
+namespace InvestigationGame.Personn.Agents
 {
-    internal class Agent
+    public class Agent
     {
         public int id;
         public int rank;

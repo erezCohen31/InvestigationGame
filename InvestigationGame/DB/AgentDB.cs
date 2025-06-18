@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using InvestigationGame.Agents;
+using InvestigationGame.Personn;
 using MySql.Data.MySqlClient;
 using System.Text.Json;
+using InvestigationGame.Personn.Agents;
 
 namespace InvestigationGame.DB
 {
@@ -467,6 +468,75 @@ namespace InvestigationGame.DB
                 Console.WriteLine($"Error getting sensors for agent {agentId}: {ex.Message}");
                 return new List<string>(); // Retourne une liste vide en cas d'erreur
             }
+        }
+
+        // Method to get all agents for a specific player
+        public List<Agent> GetAgentsByPlayerId(int playerId)
+        {
+            var agents = new List<Agent>();
+
+            try
+            {
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"
+                        SELECT a.* 
+                        FROM Agents a
+                        INNER JOIN PlayerAgents pa ON a.Id = pa.AgentId
+                        WHERE pa.PlayerId = @PlayerId";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@PlayerId", playerId);
+                        
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                int rank = reader.GetInt32("Rank");
+                                Agent agent = rank switch
+                                {
+                                    1 => new FootSoldier(),
+                                    2 => new SquadLeader(),
+                                    3 => new SeniorCommander(),
+                                    4 => new OraganizationLeader(),
+                                    _ => throw new Exception($"Unknown agent rank: {rank}")
+                                };
+
+                                agent.id = reader.GetInt32("Id");
+                                agent.isDiscovered = reader.GetBoolean("IsDiscovered");
+                                agent.foundCount = reader.GetInt32("FoundCount");
+                                agent.notCounterAttack = reader.GetInt32("NotCounterAttack");
+
+                                // Désérialiser les capteurs
+                                if (!reader.IsDBNull(reader.GetOrdinal("Sensors")))
+                                {
+                                    string sensorsJson = reader.GetString("Sensors");
+                                    agent.sensors = JsonSerializer.Deserialize<List<string>>(sensorsJson) ?? new List<string>();
+                                }
+
+                                // Désérialiser les copies des capteurs
+                                if (!reader.IsDBNull(reader.GetOrdinal("SensorsCopy")))
+                                {
+                                    string sensorsCopyJson = reader.GetString("SensorsCopy");
+                                    agent.sensorsCopy = JsonSerializer.Deserialize<List<string>>(sensorsCopyJson) ?? new List<string>();
+                                }
+
+                                agents.Add(agent);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving agents for player {playerId}: {ex.Message}");
+                throw;
+            }
+
+            return agents;
         }
     }
 }

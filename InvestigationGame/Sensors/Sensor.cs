@@ -1,4 +1,4 @@
-using InvestigationGame.Agents;
+using InvestigationGame.Personn.Agents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
