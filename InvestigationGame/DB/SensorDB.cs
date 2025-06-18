@@ -85,7 +85,6 @@ namespace InvestigationGame.DB
                         command.Parameters.AddWithValue("@Type", sensor.Type);
                         command.Parameters.AddWithValue("@IsActive", sensor.IsActive);
                         command.Parameters.AddWithValue("@ActivateCount", sensor.ActivateCount);
-                        // Récupérer le champ maxActivateCount même s'il est protégé
                         var field = sensor.GetType().GetField("maxActivateCount", 
                             System.Reflection.BindingFlags.NonPublic | 
                             System.Reflection.BindingFlags.Instance);
