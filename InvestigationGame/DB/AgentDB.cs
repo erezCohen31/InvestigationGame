@@ -374,14 +374,12 @@ namespace InvestigationGame.DB
                                     notCounterAttack = reader.GetInt32("NotCounterAttack")
                                 };
 
-                                // Désérialiser les capteurs
                                 if (!reader.IsDBNull(reader.GetOrdinal("Sensors")))
                                 {
                                     string sensorsJson = reader.GetString("Sensors");
                                     agent.sensors = JsonSerializer.Deserialize<List<string>>(sensorsJson);
                                 }
 
-                                // Désérialiser les copies des capteurs
                                 if (!reader.IsDBNull(reader.GetOrdinal("SensorsCopy")))
                                 {
                                     string sensorsCopyJson = reader.GetString("SensorsCopy");
@@ -390,7 +388,7 @@ namespace InvestigationGame.DB
 
                                 return agent;
                             }
-                            return null; // Aucun agent trouvé avec cet ID
+                            return null; 
                         }
                     }
                 }
@@ -453,7 +451,7 @@ namespace InvestigationGame.DB
                         var result = command.ExecuteScalar();
                         if (result == null || result == DBNull.Value)
                         {
-                            return new List<string>(); // Retourne une liste vide si l'agent n'est pas trouvé
+                            return new List<string>(); 
                         }
 
                         string sensorsJson = result.ToString();
@@ -466,7 +464,7 @@ namespace InvestigationGame.DB
             catch (Exception ex)
             {
                 Console.WriteLine($"Error getting sensors for agent {agentId}: {ex.Message}");
-                return new List<string>(); // Retourne une liste vide en cas d'erreur
+                return new List<string>(); 
             }
         }
 
@@ -510,14 +508,12 @@ namespace InvestigationGame.DB
                                 agent.foundCount = reader.GetInt32("FoundCount");
                                 agent.notCounterAttack = reader.GetInt32("NotCounterAttack");
 
-                                // Désérialiser les capteurs
                                 if (!reader.IsDBNull(reader.GetOrdinal("Sensors")))
                                 {
                                     string sensorsJson = reader.GetString("Sensors");
                                     agent.sensors = JsonSerializer.Deserialize<List<string>>(sensorsJson) ?? new List<string>();
                                 }
 
-                                // Désérialiser les copies des capteurs
                                 if (!reader.IsDBNull(reader.GetOrdinal("SensorsCopy")))
                                 {
                                     string sensorsCopyJson = reader.GetString("SensorsCopy");

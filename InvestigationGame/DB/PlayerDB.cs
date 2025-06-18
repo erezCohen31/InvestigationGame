@@ -202,14 +202,12 @@ namespace InvestigationGame.DB
                         agent.foundCount = reader.GetInt32("FoundCount");
                         agent.notCounterAttack = reader.GetInt32("NotCounterAttack");
 
-                        // Désérialiser les capteurs
                         if (!reader.IsDBNull(reader.GetOrdinal("Sensors")))
                         {
                             string sensorsJson = reader.GetString("Sensors");
                             agent.sensors = JsonSerializer.Deserialize<List<string>>(sensorsJson) ?? new List<string>();
                         }
 
-                        // Désérialiser les copies des capteurs
                         if (!reader.IsDBNull(reader.GetOrdinal("SensorsCopy")))
                         {
                             string sensorsCopyJson = reader.GetString("SensorsCopy");
