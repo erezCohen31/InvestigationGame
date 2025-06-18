@@ -172,7 +172,7 @@ namespace InvestigationGame.Manager
 
                     case "2":
                         var agentsCount = playerDB.GetPlayerAgents(playerId).Count;
-                        if (agentsCount == 0 ||playerDB.GetPlayerAgents(playerId).All(agent => agent.isTerminate))
+                        if (agentsCount == 0 ||!playerDB.HasActiveAgents(playerId))
 
                         {
                             Console.WriteLine("No agents found in database. Creating 2 new agents by default.");
@@ -286,8 +286,8 @@ namespace InvestigationGame.Manager
             var agents = playerDB.GetPlayerAgents(playerId);
             foreach (var agent in agents)
             {
-                if (agent.isDiscovered || agent.isTerminate)
-                    Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agent.isTerminate} in percent: {agent.foundCount*100/agent.capacity} %");
+                if (agent.isDiscovered || agentDB.GetAgentTerminateStatus(agent.id))
+                    Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agent.isDiscovered} in percent: {agent.foundCount*100/agent.capacity} %");
                 else
                     Console.WriteLine($"Agent ID: {agent.id}, Find: {agent.isTerminate}");
             }
@@ -302,7 +302,7 @@ namespace InvestigationGame.Manager
                 Console.Write("Enter agent ID: ");
                 string input = Console.ReadLine();
 
-                if (int.TryParse(input, out agentId) && agentId >= 0 && !playerDB.HasActiveAgents(agentId))
+                if (int.TryParse(input, out agentId) && agentId >= 0 && !agentDB.GetAgentTerminateStatus(agentId))
                 {
                     break;
                 }
