@@ -14,6 +14,7 @@ namespace InvestigationGame.Sensors
             this.type = "Light";
         }
 
+        
         public override int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             try

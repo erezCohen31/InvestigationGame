@@ -10,7 +10,7 @@ namespace InvestigationGame.DB
     {
         private string connectionString;
 
-
+        // Constructor to initialize the database connection and create the database and table if they do not exist
         public SensorDB(string server, string database, string userId)
         {
             string initialConnectionString = $"Server={server};User ID={userId};";
@@ -61,7 +61,7 @@ namespace InvestigationGame.DB
         }
 
 
-
+        // Method to create a new sensor in the database
         public bool CreateSensor(Sensor sensor, int agentId)
         {
             try
@@ -85,7 +85,12 @@ namespace InvestigationGame.DB
                         command.Parameters.AddWithValue("@Type", sensor.Type);
                         command.Parameters.AddWithValue("@IsActive", sensor.IsActive);
                         command.Parameters.AddWithValue("@ActivateCount", sensor.ActivateCount);
-                        command.Parameters.AddWithValue("@MaxActivateCount", sensor.GetType().GetField("maxActivateCount")?.GetValue(sensor) ?? 0);
+                        // Récupérer le champ maxActivateCount même s'il est protégé
+                        var field = sensor.GetType().GetField("maxActivateCount", 
+                            System.Reflection.BindingFlags.NonPublic | 
+                            System.Reflection.BindingFlags.Instance);
+                        int maxActivateCountValue = (int)(field?.GetValue(sensor) ?? 0);
+                        command.Parameters.AddWithValue("@MaxActivateCount", maxActivateCountValue);
                         command.Parameters.AddWithValue("@AgentId", agentId);
 
                         var result = command.ExecuteScalar();
@@ -105,7 +110,7 @@ namespace InvestigationGame.DB
             return false;
         }
 
-
+        // Method to update the status of a sensor in the database
         public bool UpdateSensorStatus(int sensorId, bool isActive)
         {
             try
@@ -141,7 +146,7 @@ namespace InvestigationGame.DB
             }
         }
 
-
+        // Method to retrieve all sensors for a specific agent from the database
         public List<Sensor> GetSensorsByAgent(int agentId)
         {
             var sensors = new List<Sensor>();
@@ -185,6 +190,7 @@ namespace InvestigationGame.DB
             return sensors;
         }
 
+        // Method to retrieve sensor from the database
         private Sensor CreateSensorFromReader(MySqlDataReader reader)
         {
             try
@@ -207,6 +213,7 @@ namespace InvestigationGame.DB
                     sensor.Type = type;
                     sensor.IsActive = Convert.ToBoolean(reader["IsActive"]);
                     sensor.ActivateCount = Convert.ToInt32(reader["ActivateCount"]);
+                    
 
                     var maxActivateCountField = sensor.GetType().GetField("maxActivateCount",
                         System.Reflection.BindingFlags.NonPublic |
@@ -228,7 +235,7 @@ namespace InvestigationGame.DB
             }
         }
 
-        
+        // Method to update the activation count of a sensor in the database
         public bool UpdateSensorActivateCount(int sensorId, int newCount)
         {
             try

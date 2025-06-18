@@ -43,6 +43,7 @@ namespace InvestigationGame.Sensors
             set { activateCount = value; }
         }
 
+        // Method to be implemented by derived classes for activating the sensor
         public virtual int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             try

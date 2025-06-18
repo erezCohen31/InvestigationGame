@@ -20,6 +20,7 @@ namespace InvestigationGame.Manager
         private AgentManager agentManager;
         private int counterRound;
 
+        //constructor to initialize the GameManager
         public GameManager()
         {
             try
@@ -33,7 +34,6 @@ namespace InvestigationGame.Manager
                 agentManager = new AgentManager();
                 counterRound = 0;
 
-                LoadGameState();
             }
             catch (Exception ex)
             {
@@ -42,49 +42,8 @@ namespace InvestigationGame.Manager
             }
         }
 
-        private void LoadGameState()
-        {
-            try
-            {
-                Console.WriteLine("Loading game state from database...");
 
-                agentManager.agents = agentDB.GetAllAgents();
-                var agents = agentManager.agents;
-
-                if (agents.Count == 0)
-                {
-                    Console.WriteLine("No saved game found. Starting a new game.");
-                    return;
-                }
-
-                Console.WriteLine($"Found {agents.Count} saved agents.");
-
-                foreach (var agent in agents)
-                {
-                    agentManager.agentByWin[agent.id] = agent.isDiscovered;
-
-                    sensorManager.AddAgent(agent.id);
-
-                    var sensors = sensorDB.GetSensorsByAgent(agent.id);
-
-                    foreach (var sensor in sensors)
-                    {
-                        sensorManager.AddSensor(agent.id, sensor);
-                    }
-
-                }
-
-                Console.WriteLine("Game state loaded successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading game state: {ex.Message}");
-                Console.WriteLine("Starting a new game...");
-                agentManager.agentByWin.Clear();
-                sensorManager.sensorsByAgent.Clear();
-            }
-        }
-
+        // Method to display the main menu and handle user input
         public void Menu()
         {
             Console.WriteLine("Welcome to the Investigation Game!");
@@ -109,6 +68,7 @@ namespace InvestigationGame.Manager
             }
         }
 
+        // Method to start the game
         public void StartGame()
         {
             try
@@ -137,8 +97,8 @@ namespace InvestigationGame.Manager
                         break;
 
                     case "2":
-                        var agents = agentDB.GetAllAgents();
-                        if (agents.Count == 0 || agentManager.agentByWin.Values.All(found => found))
+                        var agentsCount = agentDB.GetAgentsCount();
+                        if (agentsCount == 0 || agentDB.GetAllAgents().All(agent => agent.isTerminate))
 
                         {
                             Console.WriteLine("No agents found in database. Creating 2 new agents by default.");
@@ -146,7 +106,7 @@ namespace InvestigationGame.Manager
                         }
                         else
                         {
-                            Console.WriteLine($"\nFound {agents.Count} agents in database.");
+                            Console.WriteLine($"\nFound {agentsCount} agents in database.");
                         }
                         break;
 
@@ -168,6 +128,7 @@ namespace InvestigationGame.Manager
             }
         }
 
+        // Method to initialize agents with random ranks and save them to the database
         private void InitializeAgents(int count)
         {
             try
@@ -187,9 +148,6 @@ namespace InvestigationGame.Manager
 
                     bool isCreate = agentDB.CreateAgent(agent);
 
-                    agentManager.agents.Add(agent);
-                    agentManager.agentByWin.Add(agent.id, false);
-                    sensorManager.AddAgent(agent.id);
 
                     Console.WriteLine($"Agent {agent.id} created and saved to database");
                 }
@@ -201,6 +159,7 @@ namespace InvestigationGame.Manager
             }
         }
 
+        // Method to handle the agent selection loop
         private void ChooseAgentLoop()
         {
             bool isGameOver = false;
@@ -211,7 +170,7 @@ namespace InvestigationGame.Manager
 
                 int agentId = GetValidAgentId();
 
-                Agent chosenAgent = agentManager.agents.FirstOrDefault(a => a.id == agentId);
+                Agent chosenAgent = agentDB.GetAgentById(agentId);
 
                 Console.WriteLine($"You have chosen Agent {chosenAgent.id}.");
 
@@ -224,19 +183,20 @@ namespace InvestigationGame.Manager
             }
         }
 
+        // Method to display the status of all agents
         private void DisplayAgentsStatus()
         {
-            var agents = agentManager.agents;
-            var agentsByWin = agentManager.agentByWin;
+            var agents = agentDB.GetAllAgents();
             foreach (var agent in agents)
             {
-                if (agent.isDiscovered || agentsByWin[agent.id])
-                    Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agentsByWin[agent.id]} in percent: {agent.foundCount*100/agent.capacity} %");
+                if (agent.isDiscovered || agent.isTerminate)
+                    Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agent.isTerminate} in percent: {agent.foundCount*100/agent.capacity} %");
                 else
-                    Console.WriteLine($"Agent ID: {agent.id}, Find: {agentsByWin[agent.id]}");
+                    Console.WriteLine($"Agent ID: {agent.id}, Find: {agent.isTerminate}");
             }
         }
 
+        // Method to get a valid agent ID from the user
         private int GetValidAgentId()
         {
             int agentId;
@@ -245,7 +205,7 @@ namespace InvestigationGame.Manager
                 Console.Write("Enter agent ID: ");
                 string input = Console.ReadLine();
 
-                if (int.TryParse(input, out agentId) && agentId >= 0 && !agentManager.agentByWin[agentId])
+                if (int.TryParse(input, out agentId) && agentId >= 0 && !agentDB.GetAgentTerminateStatus(agentId))
                 {
                     break;
                 }
@@ -256,18 +216,20 @@ namespace InvestigationGame.Manager
             return agentId;
         }
 
-
+        // Method to check if the game is over
         private bool CheckIfGameOver()
         {
-            return agentManager.agentByWin.Values.All(found => found);
+            return agentDB.GetAllAgents().All(agent => agent.isTerminate);
         }
 
+        // Method to exit the game
         public void ExitGame()
         {
             Console.WriteLine("Exiting the game. Goodbye!");
             Environment.Exit(0);
         }
 
+        // Method to handle the counter-attack logic
         public void CounterAttack(Agent iranianAgent)
         {
             try
@@ -294,6 +256,7 @@ namespace InvestigationGame.Manager
             }
         }
 
+        // Methods to handle different counter-attack scenarios based on agent rank
         private void HandleCounterAttackSingleSensorLoss(Agent iranianAgent)
         {
             if (iranianAgent.notCounterAttack > 0)
@@ -303,7 +266,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.GetSensorsByAgent(iranianAgent.id);
+            var sensors = sensorDB.GetSensorsByAgent(iranianAgent.id);
 
 
             if (sensors.Count > 0)
@@ -326,7 +289,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.GetSensorsByAgent(iranianAgent.id);
+            var sensors = sensorDB.GetSensorsByAgent(iranianAgent.id);
             Random rnd = new Random();
             for (int i = 0; i < 2 && sensors.Count > 0; i++)
             {
@@ -347,7 +310,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.GetSensorsByAgent(iranianAgent.id);
+            var sensors = sensorDB.GetSensorsByAgent(iranianAgent.id);
             foreach (var sensor in sensors)
             {
                 iranianAgent.sensorsCopy.Add(sensor.type);
@@ -357,15 +320,13 @@ namespace InvestigationGame.Manager
             Console.WriteLine("All your sensors have been removed by the enemy attack.");
         }
 
+        // Method to find sensors for the given agent
         public bool FindSensors(Agent iranianAgent)
         {
             counterRound++;
             CounterAttack(iranianAgent);
 
-            if (!sensorManager.sensorsByAgent.ContainsKey(iranianAgent.id))
-            {
-                sensorManager.AddAgent(iranianAgent.id);
-            }
+
 
             bool isFind = false;
 
@@ -379,12 +340,8 @@ namespace InvestigationGame.Manager
                     continue;
                 }
 
-                if (!sensorManager.sensorsByAgent.TryGetValue(iranianAgent.id, out var agentSensors))
-                {
-                    Console.WriteLine("Error: Agent not found in sensor manager");
-                    return false;
-                }
-                int response = currentSensor.ActivateSensor(iranianAgent, sensorManager.GetSensorsByAgent(iranianAgent.id));
+               
+                int response = currentSensor.ActivateSensor(iranianAgent, sensorDB.GetSensorsByAgent(iranianAgent.id));
                 if (response > 0)
                 {
                     sensorDB.UpdateSensorActivateCount(response, iranianAgent.foundCount);
@@ -425,7 +382,6 @@ namespace InvestigationGame.Manager
                         }
                     }
 
-                    sensorManager.AddSensor(iranianAgent.id, currentSensor);
 
                     Console.WriteLine($"You found a {currentSensor.type} sensor!");
                     if (iranianAgent.isDiscovered)
@@ -445,7 +401,7 @@ namespace InvestigationGame.Manager
                 if (iranianAgent.sensorsCopy.Count == 0)
                 {
                     isFind = true;
-                    agentManager.agentByWin[iranianAgent.id] = true;
+                    iranianAgent.isTerminate = true;
 
                     bool agentUpdateSuccess = agentDB.UpdateAgentDiscoveryStatus(iranianAgent.id, true);
                     if (!agentUpdateSuccess)
@@ -460,6 +416,7 @@ namespace InvestigationGame.Manager
             return isFind;
         }
 
+        // Method to prompt the user for sensor selection
         private Sensor PromptSensorSelection()
         {
             Console.WriteLine("Enter a sensor type:");
