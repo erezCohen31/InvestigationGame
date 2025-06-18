@@ -1,9 +1,10 @@
-using InvestigationGame.Agents;
+using InvestigationGame.Personn;
 using InvestigationGame.Sensors;
 using InvestigationGame.DB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using InvestigationGame.Personn.Agents;
 
 namespace InvestigationGame.Manager
 {
@@ -15,25 +16,25 @@ namespace InvestigationGame.Manager
 
         private AgentDB agentDB;
         private SensorDB sensorDB;
+        private PlayerDB playerDB;
 
-        private SensorManager sensorManager;
-        private AgentManager agentManager;
+
         private int counterRound;
 
+        //constructor to initialize the GameManager
         public GameManager()
         {
             try
             {
                 agentDB = new AgentDB(DB_SERVER, DB_NAME, DB_USER);
                 sensorDB = new SensorDB(DB_SERVER, DB_NAME, DB_USER);
+                playerDB = new PlayerDB(DB_SERVER, DB_NAME, DB_USER);
 
                 Console.WriteLine("Game Manager initialized. Database connections established.");
 
-                sensorManager = new SensorManager();
-                agentManager = new AgentManager();
+
                 counterRound = 0;
 
-                LoadGameState();
             }
             catch (Exception ex)
             {
@@ -42,49 +43,8 @@ namespace InvestigationGame.Manager
             }
         }
 
-        private void LoadGameState()
-        {
-            try
-            {
-                Console.WriteLine("Loading game state from database...");
 
-                agentManager.agents = agentDB.GetAllAgents();
-                var agents = agentManager.agents;
-
-                if (agents.Count == 0)
-                {
-                    Console.WriteLine("No saved game found. Starting a new game.");
-                    return;
-                }
-
-                Console.WriteLine($"Found {agents.Count} saved agents.");
-
-                foreach (var agent in agents)
-                {
-                    agentManager.agentByWin[agent.id] = agent.isDiscovered;
-
-                    sensorManager.AddAgent(agent.id);
-
-                    var sensors = sensorDB.GetSensorsByAgent(agent.id);
-
-                    foreach (var sensor in sensors)
-                    {
-                        sensorManager.AddSensor(agent.id, sensor);
-                    }
-
-                }
-
-                Console.WriteLine("Game state loaded successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading game state: {ex.Message}");
-                Console.WriteLine("Starting a new game...");
-                agentManager.agentByWin.Clear();
-                sensorManager.sensorsByAgent.Clear();
-            }
-        }
-
+        // Method to display the main menu and handle user input
         public void Menu()
         {
             Console.WriteLine("Welcome to the Investigation Game!");
@@ -97,7 +57,8 @@ namespace InvestigationGame.Manager
             switch (input)
             {
                 case "1":
-                    StartGame();
+                    int playerId = ChoosePlayer();
+                    StartGame(playerId);
                     break;
                 case "2":
                     ExitGame();
@@ -109,7 +70,80 @@ namespace InvestigationGame.Manager
             }
         }
 
-        public void StartGame()
+        //Method to choose the player
+        public int ChoosePlayer()
+        {
+            List<Player> players = playerDB.GetAllPlayers();
+            if (players.Count == 0)
+            {
+                Console.WriteLine("No players found in the database. Creating a new player.");
+                return CreatePlayer();
+            }
+            else
+            {
+                Console.WriteLine("Choose a player from the list below:");
+                foreach (var player in players)
+                {
+                    Console.WriteLine($"ID: {player.id}, Name: {player.name}, Score: {player.score}, Created At: {player.createdAt}");
+                }
+                Console.WriteLine("Enter the ID of the player you want to choose or type 'new' to create a new player:");
+                string input = Console.ReadLine();
+                if (input.ToLower() == "new")
+                {
+                    bool isCreated = false;
+
+                    int newPlayerId = -1;
+                    while (!isCreated)
+                    {
+                        newPlayerId = CreatePlayer();
+                        if (newPlayerId != -1)
+                        {
+                            isCreated = true;
+                            Console.WriteLine($"New player created with ID: {newPlayerId}");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to create player. Please try again.");
+                        }
+                    }
+                    return newPlayerId;
+                }
+                else if (int.TryParse(input, out int playerId) && players.Any(p => p.id == playerId))
+                {
+                    Player selectedPlayer = players.First(p => p.id == playerId);
+                    Console.WriteLine($"Welcome back, {selectedPlayer.name}! Your ID is {selectedPlayer.id}.");
+                    return selectedPlayer.id;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Please try again.");
+                    return -1;
+                }
+            }
+
+        }
+
+        public int CreatePlayer()
+        {
+            Console.WriteLine("Please enter your name:");
+            string playerName = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(playerName))
+            {
+                Console.WriteLine("Invalid name. Please try again.");
+                return -1;
+            }
+            else
+            {
+                Player player = new Player(playerName, 0, DateTime.Now);
+                playerDB.CreatePlayerInDb(player);
+                Console.WriteLine($"Welcome, {player.name}! Your ID is {player.id}.");
+                Console.WriteLine("Your player has been created successfully.");
+                return player.id;
+            }
+        }
+
+        // Method to start the game
+        public void StartGame(int playerId)
         {
             try
             {
@@ -127,26 +161,26 @@ namespace InvestigationGame.Manager
                         Console.Write("\nHow many agents do you want to create? (1-10): ");
                         if (int.TryParse(Console.ReadLine(), out int count) && count > 0 && count <= 10)
                         {
-                            InitializeAgents(count);
+                            InitializeAgents(count, playerId);
                         }
                         else
                         {
                             Console.WriteLine("Invalid number. Creating 2 agents by default.");
-                            InitializeAgents(2);
+                            InitializeAgents(2, playerId);
                         }
                         break;
 
                     case "2":
-                        var agents = agentDB.GetAllAgents();
-                        if (agents.Count == 0 || agentManager.agentByWin.Values.All(found => found))
+                        var agentsCount = playerDB.GetPlayerAgents(playerId).Count;
+                        if (agentsCount == 0 ||playerDB.GetPlayerAgents(playerId).All(agent => agent.isTerminate))
 
                         {
                             Console.WriteLine("No agents found in database. Creating 2 new agents by default.");
-                            InitializeAgents(2);
+                            InitializeAgents(2, playerId);
                         }
                         else
                         {
-                            Console.WriteLine($"\nFound {agents.Count} agents in database.");
+                            Console.WriteLine($"\nFound {agentsCount} agents in database.");
                         }
                         break;
 
@@ -156,11 +190,11 @@ namespace InvestigationGame.Manager
 
                     default:
                         Console.WriteLine("Invalid choice. Creating 2 agents by default.");
-                        InitializeAgents(2);
+                        InitializeAgents(2, playerId);
                         break;
                 }
 
-                ChooseAgentLoop();
+                ChooseAgentLoop(playerId);
             }
             catch (Exception ex)
             {
@@ -168,10 +202,17 @@ namespace InvestigationGame.Manager
             }
         }
 
-        private void InitializeAgents(int count)
+        // Method to initialize agents with random ranks and save them to the database
+        private void InitializeAgents(int count, int playerId = -1)
         {
             try
             {
+                if (playerId == -1)
+                {
+                    Console.WriteLine("Error: Player ID is required to initialize agents");
+                    return;
+                }
+
                 Random random = new Random();
                 for (int i = 0; i < count; i++)
                 {
@@ -185,13 +226,27 @@ namespace InvestigationGame.Manager
                         _ => throw new Exception("Rank out of bounds")
                     };
 
-                    bool isCreate = agentDB.CreateAgent(agent);
-
-                    agentManager.agents.Add(agent);
-                    agentManager.agentByWin.Add(agent.id, false);
-                    sensorManager.AddAgent(agent.id);
-
-                    Console.WriteLine($"Agent {agent.id} created and saved to database");
+                    // Create the agent in the database
+                    bool isCreated = agentDB.CreateAgent(agent);
+                    
+                    if (isCreated && agent.id > 0)
+                    {
+                        // Associate the agent with the player
+                        bool isAssociated = playerDB.AddAgentToPlayer(playerId, agent.id);
+                        
+                        if (isAssociated)
+                        {
+                            Console.WriteLine($"Agent {agent.id} (Rank: {agent.rank}) created and associated with player {playerId}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Agent {agent.id} created but failed to associate with player {playerId}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to create agent. Please try again.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -201,42 +256,44 @@ namespace InvestigationGame.Manager
             }
         }
 
-        private void ChooseAgentLoop()
+        // Method to handle the agent selection loop
+        private void ChooseAgentLoop(int playerId)
         {
             bool isGameOver = false;
 
             while (!isGameOver)
             {
-                DisplayAgentsStatus();
+                DisplayAgentsStatus(playerId);
 
                 int agentId = GetValidAgentId();
 
-                Agent chosenAgent = agentManager.agents.FirstOrDefault(a => a.id == agentId);
+                Agent chosenAgent = agentDB.GetAgentById(agentId);
 
                 Console.WriteLine($"You have chosen Agent {chosenAgent.id}.");
 
                 FindSensors(chosenAgent);
 
-                isGameOver = CheckIfGameOver();
+                isGameOver = CheckIfGameOver(playerId);
 
                 if (isGameOver)
                     ExitGame();
             }
         }
 
-        private void DisplayAgentsStatus()
+        // Method to display the status of all agents
+        private void DisplayAgentsStatus(int playerId)
         {
-            var agents = agentManager.agents;
-            var agentsByWin = agentManager.agentByWin;
+            var agents = playerDB.GetPlayerAgents(playerId);
             foreach (var agent in agents)
             {
-                if (agent.isDiscovered || agentsByWin[agent.id])
-                    Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agentsByWin[agent.id]} in percent: {agent.foundCount*100/agent.capacity} %");
+                if (agent.isDiscovered || agent.isTerminate)
+                    Console.WriteLine($"Agent ID: {agent.id}, Rank: {agent.rank}, Capacity: {agent.capacity}, Find: {agent.isTerminate} in percent: {agent.foundCount*100/agent.capacity} %");
                 else
-                    Console.WriteLine($"Agent ID: {agent.id}, Find: {agentsByWin[agent.id]}");
+                    Console.WriteLine($"Agent ID: {agent.id}, Find: {agent.isTerminate}");
             }
         }
 
+        // Method to get a valid agent ID from the user
         private int GetValidAgentId()
         {
             int agentId;
@@ -245,7 +302,7 @@ namespace InvestigationGame.Manager
                 Console.Write("Enter agent ID: ");
                 string input = Console.ReadLine();
 
-                if (int.TryParse(input, out agentId) && agentId >= 0 && !agentManager.agentByWin[agentId])
+                if (int.TryParse(input, out agentId) && agentId >= 0 && !playerDB.HasActiveAgents(agentId))
                 {
                     break;
                 }
@@ -256,18 +313,20 @@ namespace InvestigationGame.Manager
             return agentId;
         }
 
-
-        private bool CheckIfGameOver()
+        // Method to check if the game is over
+        private bool CheckIfGameOver(int playerId)
         {
-            return agentManager.agentByWin.Values.All(found => found);
+            return playerDB.GetPlayerAgents(playerId).All(agent => agent.isTerminate);
         }
 
+        // Method to exit the game
         public void ExitGame()
         {
             Console.WriteLine("Exiting the game. Goodbye!");
             Environment.Exit(0);
         }
 
+        // Method to handle the counter-attack logic
         public void CounterAttack(Agent iranianAgent)
         {
             try
@@ -294,6 +353,7 @@ namespace InvestigationGame.Manager
             }
         }
 
+        // Methods to handle different counter-attack scenarios based on agent rank
         private void HandleCounterAttackSingleSensorLoss(Agent iranianAgent)
         {
             if (iranianAgent.notCounterAttack > 0)
@@ -303,7 +363,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
+            var sensors = sensorDB.GetSensorsByAgent(iranianAgent.id);
 
 
             if (sensors.Count > 0)
@@ -326,7 +386,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
+            var sensors = sensorDB.GetSensorsByAgent(iranianAgent.id);
             Random rnd = new Random();
             for (int i = 0; i < 2 && sensors.Count > 0; i++)
             {
@@ -347,7 +407,7 @@ namespace InvestigationGame.Manager
                 return;
             }
 
-            var sensors = sensorManager.sensors.Where(s => sensorManager.sensorsByAgent[iranianAgent.id].Contains(s.Id)).ToList();
+            var sensors = sensorDB.GetSensorsByAgent(iranianAgent.id);
             foreach (var sensor in sensors)
             {
                 iranianAgent.sensorsCopy.Add(sensor.type);
@@ -357,15 +417,13 @@ namespace InvestigationGame.Manager
             Console.WriteLine("All your sensors have been removed by the enemy attack.");
         }
 
+        // Method to find sensors for the given agent
         public bool FindSensors(Agent iranianAgent)
         {
             counterRound++;
             CounterAttack(iranianAgent);
 
-            if (!sensorManager.sensorsByAgent.ContainsKey(iranianAgent.id))
-            {
-                sensorManager.AddAgent(iranianAgent.id);
-            }
+
 
             bool isFind = false;
 
@@ -379,12 +437,8 @@ namespace InvestigationGame.Manager
                     continue;
                 }
 
-                if (!sensorManager.sensorsByAgent.TryGetValue(iranianAgent.id, out var agentSensors))
-                {
-                    Console.WriteLine("Error: Agent not found in sensor manager");
-                    return false;
-                }
-                int response = currentSensor.ActivateSensor(iranianAgent, sensorManager.GetSensorsByAgent(iranianAgent.id));
+
+                int response = currentSensor.ActivateSensor(iranianAgent, sensorDB.GetSensorsByAgent(iranianAgent.id));
                 if (response > 0)
                 {
                     sensorDB.UpdateSensorActivateCount(response, iranianAgent.foundCount);
@@ -395,21 +449,10 @@ namespace InvestigationGame.Manager
                 {
                     iranianAgent.foundCount++;
 
-                    bool updateSuccess = agentDB.UpdateAgentFoundCount(iranianAgent.id, iranianAgent.foundCount);
-
+                    agentDB.UpdateAgentFoundCount(iranianAgent.id, iranianAgent.foundCount);
                     agentDB.UpdateAgentDiscoveryStatus(iranianAgent.id, iranianAgent.isDiscovered);
                     agentDB.UpdateAgentNotCounterAttack(iranianAgent.id, iranianAgent.notCounterAttack);
                     agentDB.UpdateAgentSensorsCopy(iranianAgent.id, iranianAgent.sensorsCopy);
-
-
-
-
-
-                    if (!updateSuccess)
-                    {
-                        Console.WriteLine("Warning: Could not update agent's found count in database");
-                    }
-
 
 
                     bool createSensorId = sensorDB.CreateSensor(currentSensor, iranianAgent.id);
@@ -425,7 +468,6 @@ namespace InvestigationGame.Manager
                         }
                     }
 
-                    sensorManager.AddSensor(iranianAgent.id, currentSensor);
 
                     Console.WriteLine($"You found a {currentSensor.type} sensor!");
                     if (iranianAgent.isDiscovered)
@@ -445,7 +487,7 @@ namespace InvestigationGame.Manager
                 if (iranianAgent.sensorsCopy.Count == 0)
                 {
                     isFind = true;
-                    agentManager.agentByWin[iranianAgent.id] = true;
+                    iranianAgent.isTerminate = true;
 
                     bool agentUpdateSuccess = agentDB.UpdateAgentDiscoveryStatus(iranianAgent.id, true);
                     if (!agentUpdateSuccess)
@@ -460,6 +502,7 @@ namespace InvestigationGame.Manager
             return isFind;
         }
 
+        // Method to prompt the user for sensor selection
         private Sensor PromptSensorSelection()
         {
             Console.WriteLine("Enter a sensor type:");

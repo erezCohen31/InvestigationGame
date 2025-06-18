@@ -1,4 +1,4 @@
-using InvestigationGame.Agents;
+using InvestigationGame.Personn.Agents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +43,7 @@ namespace InvestigationGame.Sensors
             set { activateCount = value; }
         }
 
+        // Method to be implemented by derived classes for activating the sensor
         public virtual int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             try

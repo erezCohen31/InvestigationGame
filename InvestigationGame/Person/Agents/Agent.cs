@@ -4,15 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvestigationGame.Agents
+namespace InvestigationGame.Personn.Agents
 {
-    internal class Agent
+    public class Agent
     {
         public int id;
         public int rank;
         public List<string> sensors;
         public List<string> sensorsCopy;
         public bool isDiscovered = false;
+        public bool isTerminate;
         public int capacity;
         public int foundCount;
         public int notCounterAttack;
@@ -22,7 +23,9 @@ namespace InvestigationGame.Agents
             notCounterAttack = 0;
             sensors = new List<string>();
             sensorsCopy = new List<string>();
+            isTerminate = false;
         }
+        //choose random sensors from SensorType enum and assign them to the agent's sensors list
         public void RandomSensor()
         {
             try

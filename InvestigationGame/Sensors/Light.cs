@@ -1,4 +1,4 @@
-using InvestigationGame.Agents;
+using InvestigationGame.Personn.Agents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +14,7 @@ namespace InvestigationGame.Sensors
             this.type = "Light";
         }
 
+        
         public override int ActivateSensor(Agent iranianAgent, List<Sensor> sensorsByAgent)
         {
             try
