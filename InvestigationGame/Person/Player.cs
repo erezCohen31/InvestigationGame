@@ -1,7 +1,7 @@
-using InvestigationGame.Personn.Agents;
+using InvestigationGame.Person.Agents;
 using System;
 
-namespace InvestigationGame.Personn
+namespace InvestigationGame.Person
 {
     public class Player
     {

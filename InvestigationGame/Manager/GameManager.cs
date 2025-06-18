@@ -1,10 +1,10 @@
-using InvestigationGame.Personn;
+using InvestigationGame.Person;
 using InvestigationGame.Sensors;
 using InvestigationGame.DB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using InvestigationGame.Personn.Agents;
+using InvestigationGame.Person.Agents;
 
 namespace InvestigationGame.Manager
 {

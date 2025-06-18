@@ -1,10 +1,10 @@
 using MySql.Data.MySqlClient;
-using InvestigationGame.Personn;
+using InvestigationGame.Person;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using InvestigationGame.Personn.Agents;
+using InvestigationGame.Person.Agents;
 
 namespace InvestigationGame.DB
 {

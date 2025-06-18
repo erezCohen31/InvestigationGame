@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvestigationGame.Personn.Agents
+namespace InvestigationGame.Person.Agents
 {
     public class Agent
     {
