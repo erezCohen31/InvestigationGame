@@ -1,4 +1,4 @@
-using InvestigationGame.Personn.Agents;
+using InvestigationGame.Person.Agents;
 
 namespace InvestigationGame.Sensors
 {
