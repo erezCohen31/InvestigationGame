@@ -279,6 +279,8 @@ namespace InvestigationGame.DB
                                 agent.id = reader.GetInt32("Id");
                                 agent.rank = reader.GetInt32("Rank");
                                 agent.capacity = reader.GetInt32("Capacity");
+                                agent.isDiscovered = reader.GetBoolean("IsDiscovered");
+                                agent.foundCount = reader.GetInt32("FoundCount");
                                 // Map other agent properties
 
                                 agents.Add(agent);
